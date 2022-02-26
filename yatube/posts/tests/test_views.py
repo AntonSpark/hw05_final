@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from ..models import Post, Group
+from ..models import Post, Group, Follow
 
 User = get_user_model()
 
@@ -107,3 +107,96 @@ class PostViewsTest(TestCase):
         )
         response = self.authorized_client.get(other_url)
         self.assertNotIn(PostViewsTest.post, response.context['page_obj'])
+
+
+class FollowersTests(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.user_1 = User.objects.create_user(username='test_1')
+        cls.user_2 = User.objects.create_user(username='test_2')
+        cls.user_3 = User.objects.create_user(username='test_3')
+        cls.group = Group.objects.create(
+            title='Тестовый заголовок',
+            slug='test-slug',
+            description='Тестовое описание группы'
+        )
+
+    def setUp(self):
+        self.unauthorized_client = Client()
+        self.authorized_client = Client()
+        self.authorized_client.force_login(self.user_2)
+
+    def test_authorized_user_can_follow_authors(self):
+        """Авторизованный пользователь может
+        подписываться на других пользователей.
+        """
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.user_1.username})
+        )
+        self.assertTrue(
+            Follow.objects.filter(
+                user=self.user_2, author=self.user_1).exists()
+        )
+
+    def test_unauthorized_user_can_not_follow_authors(self):
+        """Неавторизованный пользователь не может
+        подписываться на других пользователей.
+        """
+        followers_count = Follow.objects.all().count()
+        self.unauthorized_client.get(
+            reverse(
+                'posts:profile_follow',
+                kwargs={'username': self.user_1.username})
+        )
+        followers_count_check = Follow.objects.all().count()
+        self.assertEqual(followers_count, followers_count_check)
+
+    def test_user_can_unfollow_authors(self):
+        """Пользователь может отписаться от автора."""
+        Follow.objects.create(user=self.user_2, author=self.user_1)
+        self.assertTrue(
+            Follow.objects.filter(
+                user=self.user_2, author=self.user_1).exists()
+        )
+        self.authorized_client.get(
+            reverse(
+                'posts:profile_unfollow',
+                kwargs={'username': self.user_1.username})
+        )
+        self.assertFalse(
+            Follow.objects.filter(
+                user=self.user_2, author=self.user_1).exists()
+        )
+
+    def test_post_on_follow_page_of_follower(self):
+        """Новая запись пользователя появляется
+        в ленте тех, кто на него подписан.
+        """
+        Follow.objects.create(user=self.user_2, author=self.user_1)
+        post = Post.objects.create(
+            text='Тестовый пост для проверки подписок',
+            author=self.user_1,
+            group=self.group,
+        )
+        response = self.authorized_client.get(
+            reverse('posts:follow_index'))
+        posts_list = response.context['page_obj']
+        self.assertIn(post, posts_list)
+
+    def test_no_post_on_follow_page_of_non_follower(self):
+        """Новая запись пользователя не появляется
+        в ленте тех, кто на него не подписан.
+        """
+        self.authorized_client.force_login(self.user_3)
+        post = Post.objects.create(
+            text='Тестовый пост для проверки подписок',
+            author=self.user_1,
+            group=self.group,
+        )
+        response = self.authorized_client.get(
+            reverse('posts:follow_index'))
+        posts_list = response.context['page_obj']
+        self.assertNotIn(post, posts_list)

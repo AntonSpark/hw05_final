@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from ..models import Group, Post
+from ..models import Group, Post, Follow
 
 User = get_user_model()
 
@@ -80,3 +80,30 @@ class PostURLTests(TestCase):
         response = self.authorized_client.get(reverse(
             'posts:post_edit', kwargs={'post_id': self.post.pk}))
         self.assertTemplateUsed(response, 'posts/post_create.html')
+
+
+    def test_follow_index(self):
+        """Страница избранных авторов доступна
+        только авторизованным пользователям"""
+        response = self.authorized_client.get('/follow/')
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+    def test_profile_follow(self):
+        """Функция подписки доступна
+        только авторизованным пользователям"""
+        username = PostURLTests.user.username
+        response = self.authorized_client.get(f'/profile/{username}/follow/')
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def test_profile_unfollow(self):
+        """Функция отписки доступна
+        только авторизованным пользователям"""
+        Follow.objects.create(
+            author=PostURLTests.user,
+            user=self.user
+        )
+        username = PostURLTests.user.username
+        response = self.authorized_client.get(f'/profile/{username}/unfollow/')
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+
