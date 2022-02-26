@@ -39,7 +39,9 @@ def profile(request, username):
     posts = author.posts.all()
     posts_count = author.posts.count
     page_obj = pagination(request, posts)
-    following = Follow.objects.filter(user__username=user, author=author).exists()
+    following = Follow.objects.filter(
+        user__username=user, author=author
+    ).exists()
     context = {
         'author': author,
         'page_obj': page_obj,
@@ -111,6 +113,7 @@ def add_comment(request, post_id):
         comment.post = post
         comment.save()
     return redirect('posts:post_detail', post_id=post_id)
+
 
 @login_required
 def follow_index(request):

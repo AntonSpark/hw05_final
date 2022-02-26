@@ -75,7 +75,6 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(form_data['text'], last_object.text)
         self.assertEqual(form_data['group'], last_object.group.pk)
 
-
     def test_edit_post(self):
         form_data = {
             'text': 'Наконец я сдам 5 спринт',

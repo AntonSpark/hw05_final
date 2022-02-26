@@ -81,7 +81,6 @@ class PostURLTests(TestCase):
             'posts:post_edit', kwargs={'post_id': self.post.pk}))
         self.assertTemplateUsed(response, 'posts/post_create.html')
 
-
     def test_follow_index(self):
         """Страница избранных авторов доступна
         только авторизованным пользователям"""
@@ -105,5 +104,3 @@ class PostURLTests(TestCase):
         username = PostURLTests.user.username
         response = self.authorized_client.get(f'/profile/{username}/unfollow/')
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-
-
