@@ -16,6 +16,7 @@ def index(request):
     context = {
         'page_obj': page_obj,
         'title': 'Главная страница Yatube',
+        'index': True
     }
     return render(request, 'posts/index.html', context)
 
@@ -39,9 +40,8 @@ def profile(request, username):
     posts = author.posts.all()
     posts_count = author.posts.count
     page_obj = pagination(request, posts)
-    following = Follow.objects.filter(
-        user__username=user, author=author
-    ).exists()
+    following = user.is_authenticated and Follow.objects.filter(
+        user=request.user, author=author).exists()
     context = {
         'author': author,
         'page_obj': page_obj,
@@ -121,7 +121,8 @@ def follow_index(request):
         author__following__user=request.user
     )
     context = {
-        'page_obj': pagination(request, post_list)
+        'page_obj': pagination(request, post_list),
+        'follow': True
     }
     return render(request, 'posts/follow.html', context)
 

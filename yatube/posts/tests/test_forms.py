@@ -17,16 +17,7 @@ class PostCreateFormTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='anton')
-        cls.group = Group.objects.create(
-            title='test',
-            slug='supergroup_8u8907272363',
-            description='Тестовый group для теста',
-        )
-        cls.post = Post.objects.create(
-            author=cls.user,
-            text='Просто текст',
-            group=cls.group
-        )
+        
         small_gif = (
             b'\x47\x49\x46\x38\x39\x61\x02\x00'
             b'\x01\x00\x80\x00\x00\x00\x00\x00'
@@ -40,11 +31,17 @@ class PostCreateFormTests(TestCase):
             content=small_gif,
             content_type='image/gif'
         )
-        cls.form_data = {
-            'text': 'Тестовый текст - создаем пост через форму',
-            'group': cls.group.id,
-            'image': cls.uploaded,
-        }
+        cls.group = Group.objects.create(
+            title='test',
+            slug='supergroup_8u8907272363',
+            description='Тестовый group для теста',
+        )
+        cls.post = Post.objects.create(
+            author=cls.user,
+            text='Просто текст',
+            group=cls.group,
+            image=cls.uploaded
+        )
 
     @classmethod
     def tearDownClass(cls):
@@ -61,6 +58,7 @@ class PostCreateFormTests(TestCase):
         form_data = {
             'text': 'Тестовый текст',
             'group': self.group.pk,
+            'image': 'posts/small.gif'
         }
         response = self.authorized_client.post(
             reverse('posts:post_create'),
@@ -124,6 +122,8 @@ class CommentCreateFormTests(TestCase):
             Comment.objects.get(text=self.form_data['text']).text,
             self.form_data['text']
         )
+        last_object = Comment.objects.order_by('-id').first()
+        self.assertEqual(self.form_data['text'], last_object.text)
 
     def test_unauthorized_user_cannot_comment_post(self):
         """Неавторизованный пользователь не может прокомментировать пост."""

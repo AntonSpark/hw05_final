@@ -28,8 +28,3 @@ class CommentForm(forms.ModelForm):
             'text': 'Текст нового комментария',
         }
 
-    def clean_text(self):
-        text = self.cleaned_data['text']
-        if len(text) > 1:
-            return text
-        raise forms.ValidationError("Не заполнен текст комментария!")
