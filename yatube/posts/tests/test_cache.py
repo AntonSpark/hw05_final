@@ -33,4 +33,3 @@ class CacheTests(TestCase):
         cache.clear()
         content_cache_clear = self.client.get(reverse('posts:index')).content
         self.assertNotEqual(content, content_cache_clear)
-
