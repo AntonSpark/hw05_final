@@ -57,7 +57,7 @@ class PostCreateFormTests(TestCase):
         form_data = {
             'text': 'Тестовый текст',
             'group': self.group.pk,
-            'image': 'posts/small.gif'
+            'image': self.uploaded.name,
         }
         response = self.authorized_client.post(
             reverse('posts:post_create'),
@@ -71,6 +71,7 @@ class PostCreateFormTests(TestCase):
         last_object = Post.objects.order_by('-id').first()
         self.assertEqual(form_data['text'], last_object.text)
         self.assertEqual(form_data['group'], last_object.group.pk)
+        self.assertTrue(form_data['image'], last_object.image)
 
     def test_edit_post(self):
         form_data = {
@@ -116,10 +117,6 @@ class CommentCreateFormTests(TestCase):
             self.reverse_link,
             data=self.form_data,
             follow=True
-        )
-        self.assertEqual(
-            Comment.objects.get(text=self.form_data['text']).text,
-            self.form_data['text']
         )
         last_object = Comment.objects.order_by('-id').first()
         self.assertEqual(self.form_data['text'], last_object.text)

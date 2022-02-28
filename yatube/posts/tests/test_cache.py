@@ -22,8 +22,6 @@ class CacheTests(TestCase):
             text='Тестовый пост',
         )
 
-    def setUp(self):
-        Client()
 
     def test_cache_index_page(self):
         content = self.client.get(reverse('posts:index')).content
