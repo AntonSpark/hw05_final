@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.urls import reverse
 
 from ..models import Post
@@ -21,7 +21,6 @@ class CacheTests(TestCase):
             author=cls.user,
             text='Тестовый пост',
         )
-
 
     def test_cache_index_page(self):
         content = self.client.get(reverse('posts:index')).content
