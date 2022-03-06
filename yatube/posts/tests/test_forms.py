@@ -57,7 +57,7 @@ class PostCreateFormTests(TestCase):
         form_data = {
             'text': 'Тестовый текст',
             'group': self.group.pk,
-            'image': self.uploaded.name,
+            'image': self.uploaded,
         }
         response = self.authorized_client.post(
             reverse('posts:post_create'),
@@ -105,7 +105,6 @@ class CommentCreateFormTests(TestCase):
         )
         cls.form_data = {
             'text': 'Тестовый текст - комментарий к посту',
-            'author': cls.authorized_user
         }
         cls.reverse_link = reverse(
             'posts:add_comment',
@@ -120,6 +119,7 @@ class CommentCreateFormTests(TestCase):
         )
         last_object = Comment.objects.order_by('-id').first()
         self.assertEqual(self.form_data['text'], last_object.text)
+        #прошу дать подсказку, как дополнить код, у меня при попытках ломается(
 
     def test_unauthorized_user_cannot_comment_post(self):
         """Неавторизованный пользователь не может прокомментировать пост."""
