@@ -118,11 +118,10 @@ class CommentCreateFormTests(TestCase):
             data=self.form_data,
             follow=True
         )
-        
         last_object = Comment.objects.order_by('-id').first()
         self.assertEqual(self.form_data['text'], last_object.text)
         self.assertEqual(Comment.objects.count(), comments_count + 1)
-        
+
     def test_unauthorized_user_cannot_comment_post(self):
         """Неавторизованный пользователь не может прокомментировать пост."""
         comments_count = Comment.objects.count()
