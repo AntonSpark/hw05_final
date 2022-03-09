@@ -112,15 +112,17 @@ class CommentCreateFormTests(TestCase):
 
     def test_authorized_user_can_comment_post(self):
         """Авторизованный пользователь может прокомментировать пост."""
+        comments_count = Comment.objects.count()
         self.authorized_client.post(
             self.reverse_link,
             data=self.form_data,
             follow=True
         )
+        
         last_object = Comment.objects.order_by('-id').first()
         self.assertEqual(self.form_data['text'], last_object.text)
-        # прошу дать подсказку, как дополнить код, у меня ломается(
-
+        self.assertEqual(Comment.objects.count(), comments_count + 1)
+        
     def test_unauthorized_user_cannot_comment_post(self):
         """Неавторизованный пользователь не может прокомментировать пост."""
         comments_count = Comment.objects.count()
